@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MockBook — demo</title>
+<link rel="stylesheet" href="mockbook.css">
+<style>
+  body { margin: 0; padding: 32px; font: 14px/1.4 system-ui, sans-serif; background: #e9ecf1; color: #222; }
+  h2 { margin: 24px 0 8px; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: #667; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: start; }
+  .cell { background: #fff; border-radius: 12px; padding: 16px; }
+  .cell.dark { background: #0d1b3a; }
+  .narrow { max-width: 340px; }
+</style>
+</head>
+<body>
+
+<h2>1 · reflection · 2 · floating · 3 · trio (JS)</h2>
+<div class="grid">
+  <div class="cell"><div id="a"></div></div>
+  <div class="cell"><div id="b"></div></div>
+  <div class="cell"><div id="c"></div></div>
+</div>
+
+<h2>4 · spine · 5 · lying · 6 · spread</h2>
+<div class="grid">
+  <div class="cell"><div id="d"></div></div>
+  <div class="cell"><div id="e"></div></div>
+  <div class="cell"><div id="f"></div></div>
+</div>
+
+<h2>7 · pile · 8 · showcase · 9 · balance · 10 · fan</h2>
+<div class="grid">
+  <div class="cell"><div id="g"></div></div>
+  <div class="cell"><div id="h"></div></div>
+  <div class="cell"><div id="i"></div></div>
+  <div class="cell"><div id="j"></div></div>
+</div>
+
+<h2>11 · sheets · 12 · cascade · 13 · desk</h2>
+<div class="grid">
+  <div class="cell"><div id="k"></div></div>
+  <div class="cell"><div id="l"></div></div>
+  <div class="cell"><div id="m"></div></div>
+</div>
+
+<script src="mockbook.js"></script>
+<script>
+  MockBook.render('#a', { variant: 'reflection', cover: 'cover.png', pages: 1540 });
+  MockBook.render('#b', { variant: 'floating',   cover: 'cover.png', pages: 2240 });
+  MockBook.render('#c', { variant: 'trio',       cover: 'cover.png', left: 'p1.png', right: 'p2.png' });
+  MockBook.render('#d', { variant: 'spine',      cover: 'cover.png', pages: 50 });
+  MockBook.render('#e', { variant: 'lying',      cover: 'cover.png', pages: 120 });
+  MockBook.render('#f', { variant: 'spread',     left: 'p1.png', right: 'p2.png', pages: 240});
+  MockBook.render('#g', { variant: 'pile',       cover: 'cover.png', count: 3 });
+  MockBook.render('#h', { variant: 'showcase',   cover: 'cover.png', count: 2 });
+  MockBook.render('#i', { variant: 'balance',    cover: 'cover.png' });
+  MockBook.render('#j', { variant: 'fan',        cover: 'cover.png', count: 3 });
+  MockBook.render('#k', { variant: 'sheets',     cover: 'cover.png', left: 'p1.png', right: 'p2.png' });
+  MockBook.render('#l', { variant: 'cascade',    cover: 'cover.png', left: 'p1.png', right: 'p2.png' });
+  MockBook.render('#m', { variant: 'desk',       cover: 'cover.png', left: 'p1.png', right: 'p2.png' });
+</script>
+</body>
+</html>
