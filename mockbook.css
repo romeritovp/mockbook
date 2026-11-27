@@ -1,0 +1,529 @@
+/*!
+ * mockbook.css — ebook mockups in pure 3D CSS (no dependencies)
+ * Everything is sized in container units (cqw): the mockup scales
+ * with the width of the element it is rendered into.
+ */
+
+.mkb {
+  /* defaults (each variant overrides what it needs) */
+  --ratio: 1.414;          /* cover height / width (the lib reads it from the image) */
+  --bw: 56;                /* book width, in % of the container width */
+  --thick: .03;            /* book thickness / width */
+  --rx: 0deg; --ry: -16deg; --rz: 0deg;
+  --persp: 3.6;            /* perspective distance, in book widths */
+  --back: #10131c;         /* back cover and spine color */
+  --page: #f1e9db;         /* page color (edge of the page block) */
+
+  position: relative;
+  display: block;
+  width: 100%;
+  container-type: inline-size;
+  contain: layout style;
+  line-height: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mkb *, .mkb *::before, .mkb *::after { box-sizing: border-box; }
+
+.mkb-stage {
+  position: relative;
+  width: 100%;
+  height: calc(var(--stage-h) * 1cqw);
+  overflow: visible;
+}
+
+.mkb img { display: block; width: 100%; height: 100%; object-fit: fill; user-select: none; -webkit-user-drag: none; }
+
+/* =========================================================
+   3D BOOK (variants: reflection, floating)
+   ========================================================= */
+.mkb-scene {
+  --W: calc(var(--bw) * 1cqw);
+  --H: calc(var(--bw) * var(--ratio) * 1cqw);
+  --D: calc(var(--bw) * var(--thick) * 1cqw);
+  --I: calc(var(--bw) * .005cqw);     /* inset of the page block relative to the cover */
+
+  position: absolute;
+  left: 50%;
+  top: calc(var(--cy) * 1cqw);
+  width: var(--W);
+  height: var(--H);
+  margin-left: calc(var(--W) * -.5);
+  margin-top: calc(var(--H) * -.5);
+  perspective: calc(var(--W) * var(--persp));
+  perspective-origin: 50% 50%;
+}
+
+.mkb-book {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateZ(var(--rz)) rotateX(var(--rx)) rotateY(var(--ry));
+}
+
+.mkb-face { position: absolute; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+
+/* front cover */
+.mkb-front {
+  inset: 0;
+  transform: translateZ(calc(var(--D) * .5));
+  background: var(--back);
+  border-radius: calc(var(--W) * .004) calc(var(--W) * .008) calc(var(--W) * .008) calc(var(--W) * .004);
+  overflow: hidden;
+  box-shadow: 0 0 0 .05cqw rgba(0, 0, 0, .35);
+}
+/* spine crease + soft sheen over the cover */
+.mkb-front::after {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.38) 0, rgba(255,255,255,.14) 1.1%, rgba(0,0,0,.12) 2.4%, rgba(0,0,0,0) 5%),
+    linear-gradient(112deg, rgba(255,255,255,.10) 0, rgba(255,255,255,0) 38%, rgba(0,0,0,.10) 100%);
+}
+
+/* back cover (slightly larger than the page block, so it "peeks out" at the edge) */
+.mkb-back {
+  inset: 0;
+  transform: rotateY(180deg) translateZ(calc(var(--D) * .5));
+  background: var(--back);
+  border-radius: calc(var(--W) * .004) calc(var(--W) * .008) calc(var(--W) * .008) calc(var(--W) * .004);
+}
+
+/* spine */
+.mkb-spine {
+  top: 0; height: 100%;
+  left: calc(var(--D) * -.5);
+  width: var(--D);
+  transform: rotateY(-90deg);
+  background: linear-gradient(90deg, rgba(255,255,255,.10), rgba(0,0,0,.25)), var(--back);
+}
+
+/* page block: right side (fore edge) */
+.mkb-pages-right {
+  top: var(--I); height: calc(100% - var(--I) * 2);
+  left: calc(100% - var(--I) - var(--D) * .5);
+  width: var(--D);
+  transform: rotateY(90deg);
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.20), rgba(0,0,0,0) 30%, rgba(0,0,0,0) 70%, rgba(0,0,0,.14)),
+    repeating-linear-gradient(90deg, var(--page) 0 1.3px, rgba(120, 100, 70, .55) 1.3px 1.8px);
+}
+.mkb-pages-top, .mkb-pages-bottom {
+  left: 0; width: calc(100% - var(--I));
+  height: var(--D);
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,0) 40%),
+    repeating-linear-gradient(180deg, var(--page) 0 1.3px, rgba(120, 100, 70, .55) 1.3px 1.8px);
+}
+.mkb-pages-top    { top: calc(var(--I) - var(--D) * .5); transform: rotateX(90deg); }
+.mkb-pages-bottom { top: calc(100% - var(--I) - var(--D) * .5); transform: rotateX(-90deg); }
+
+/* ---------- variant: reflection ---------- */
+.mkb--reflection {
+  --bw: 56; --ry: -21deg; --rx: 0deg; --rz: 0deg; --persp: 3.4; --thick: .15;
+  --stage-h: calc(var(--bw) * var(--ratio) * 1.4 + 10);
+  --cy: calc(var(--bw) * var(--ratio) * .5 + 6);
+}
+.mkb--reflection .mkb-ground {
+  position: absolute;
+  left: 50%; width: calc(var(--bw) * 1.02cqw); margin-left: calc(var(--bw) * -.51cqw);
+  top: calc((var(--cy) + var(--bw) * var(--ratio) * .5 - 1.2) * 1cqw);
+  height: 3cqw;
+  background: radial-gradient(closest-side, rgba(0,0,0,.45), rgba(0,0,0,0));
+  filter: blur(.7cqw);
+}
+/* Reflection: the book is mirrored in 3D (in the same space and perspective), not the already-projected image.
+   The wrapper starts at the base of the book and clips/fades only the visible part of the reflection. */
+.mkb--reflection .mkb-reflection {
+  position: absolute;
+  left: 50%;
+  width: calc(var(--bw) * 1.7cqw);
+  margin-left: calc(var(--bw) * -.85cqw);
+  /* starts .15 of the height ABOVE the base: the base is tilted by the perspective, and the reflection
+     only has content below it; the horizontal clip must not cut off the highest corner */
+  top: calc((var(--cy) + var(--bw) * var(--ratio) * .35) * 1cqw);
+  height: calc(var(--bw) * var(--ratio) * .77cqw);
+  opacity: .55;
+  filter: blur(.45cqw);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 20%, rgba(0,0,0,0) 90%);
+          mask-image: linear-gradient(to bottom, #000 0%, #000 20%, rgba(0,0,0,0) 90%);
+  pointer-events: none;
+}
+.mkb--reflection .mkb-reflection .mkb-scene {
+  /* same box and same perspective origin as the original book, raised to the top of the book */
+  top: calc(var(--bw) * var(--ratio) * -.85cqw);
+  left: 50%;
+  margin-top: 0;
+}
+/* mirror about the plane of the book base: flip Y and move down by the book height (+ gap) */
+.mkb-mirror {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  transform: translateY(calc(var(--H) + .35cqw)) scaleY(-1);
+}
+/* scaleY(-1) flips the face orientation: CSS would otherwise hide them */
+.mkb-mirror .mkb-face { backface-visibility: visible; -webkit-backface-visibility: visible; }
+
+/* ---------- variant: floating ---------- */
+.mkb--floating {
+  --bw: 58; --ry: -24deg; --rx: 7deg; --rz: 9deg; --persp: 3.4; --thick: .15;
+  --stage-h: calc(var(--bw) * var(--ratio) * 1.24 + 14);
+  --cy: calc(var(--bw) * var(--ratio) * .5 * 1.08 + 4);
+}
+.mkb--floating .mkb-ground {
+  position: absolute;
+  left: 52%; width: calc(var(--bw) * 1.1cqw); margin-left: calc(var(--bw) * -.55cqw);
+  bottom: 1cqw;
+  height: calc(var(--bw) * .2cqw);
+  background: radial-gradient(closest-side, rgba(0,0,0,.62) 0%, rgba(0,0,0,.30) 48%, rgba(0,0,0,0) 100%);
+  filter: blur(.5cqw);
+}
+
+/* =========================================================
+   TRIO (three overlapping pages)
+   ========================================================= */
+.mkb--trio {
+  --cw: 41;                 /* center card width (% of the container) */
+  --sw: 39;                 /* side card width */
+  --stage-h: calc(var(--cw) * var(--ratio) * 1.14 + 5);
+}
+.mkb-card {
+  position: absolute;
+  background: #fff;
+  overflow: hidden;
+  border-radius: calc(var(--w) * .03cqw);
+  height: calc(var(--w) * var(--ratio) * 1cqw);
+  width: calc(var(--w) * 1cqw);
+  box-shadow:
+    0 calc(var(--w) * .07cqw) calc(var(--w) * .12cqw) calc(var(--w) * -.02cqw) rgba(0,0,0,.34),
+    0 calc(var(--w) * .015cqw) calc(var(--w) * .035cqw) rgba(0,0,0,.20);
+}
+.mkb-card--center { --w: var(--cw); left: 50%; margin-left: calc(var(--cw) * -.5cqw); top: 1.5cqw; z-index: 3; }
+.mkb-card--left   {
+  --w: var(--sw); left: 23.5%; margin-left: calc(var(--sw) * -.5cqw);
+  top: calc((var(--cw) * var(--ratio) * .13 + 1.5) * 1cqw);
+  transform: perspective(70cqw) rotateY(11deg) rotateZ(-5.5deg);
+  z-index: 1;
+}
+.mkb-card--right  {
+  --w: var(--sw); left: 76.5%; margin-left: calc(var(--sw) * -.5cqw);
+  top: calc((var(--cw) * var(--ratio) * .13 + 1.5) * 1cqw);
+  transform: perspective(70cqw) rotateY(-11deg) rotateZ(5.5deg);
+  z-index: 2;
+}
+/* blank page (when there is no image for a side card) */
+.mkb-card--blank {
+  background:
+    repeating-linear-gradient(180deg, #d4d9e2 0 calc(var(--w) * .006cqw), transparent calc(var(--w) * .006cqw) calc(var(--w) * .022cqw))
+      center 22% / 78% 66% no-repeat,
+    linear-gradient(180deg, #0f2c6b 0, #0f2c6b 11%, #fff 11%);
+}
+
+/* =========================================================
+   LOOSE SHEETS: sheets, cascade, desk (three sheets of paper)
+   ========================================================= */
+.mkb--sheets  { --lw: 36; --stage-h: calc(var(--lw) * var(--ratio) * 1.2 + 6);  --cyl: calc(var(--lw) * var(--ratio) * .5 + 3); }
+.mkb--cascade { --lw: 42; --stage-h: calc(var(--lw) * var(--ratio) + 16);       --cyl: calc(var(--lw) * var(--ratio) * .5 + 2); }
+.mkb--desk    {
+  --lw: 36; --rx: 50deg; --rz: -6deg;
+  --stage-h: calc(var(--lw) * var(--ratio) * .78 + 12);
+  --cyl: calc(var(--stage-h) * .5);
+}
+.mkb-leaf {
+  position: absolute;
+  left: 50%; top: calc(var(--cyl) * 1cqw);
+  width: calc(var(--lw) * 1cqw);
+  height: calc(var(--lw) * var(--ratio) * 1cqw);
+  margin-left: calc(var(--lw) * -.5cqw);
+  margin-top: calc(var(--lw) * var(--ratio) * -.5cqw);
+  background: #fff;
+  border-radius: calc(var(--lw) * .012cqw);
+  overflow: hidden;
+  /* paper: soft lift shadow + tight contact shadow */
+  box-shadow:
+    0 calc(var(--lw) * .05cqw) calc(var(--lw) * .1cqw) calc(var(--lw) * -.02cqw) rgba(0,0,0,.30),
+    0 calc(var(--lw) * .008cqw) calc(var(--lw) * .02cqw) rgba(0,0,0,.14);
+}
+/* faint sheen so the paper does not look like a flat screenshot */
+.mkb-leaf::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(125deg, rgba(255,255,255,.12) 0, rgba(255,255,255,0) 40%, rgba(0,0,0,.05) 100%);
+}
+.mkb-leaf--blank {
+  background:
+    repeating-linear-gradient(180deg, #d4d9e2 0 calc(var(--lw) * .006cqw), transparent calc(var(--lw) * .006cqw) calc(var(--lw) * .022cqw))
+      center 50% / 78% 78% no-repeat,
+    #fff;
+}
+/* fanned from a pivot below the sheets */
+.mkb--sheets .mkb-leaf { transform-origin: 50% 125%; transform: rotate(var(--r)); }
+.mkb--cascade .mkb-leaf { transform: translate(calc(var(--x) * 1cqw), calc(var(--y) * 1cqw)) rotate(var(--r)); }
+/* desk: every sheet shares one perspective and is laid on the same tilted table, then spread
+   out on it. Sheets are painted in DOM order (back first), so they never poke through. */
+.mkb-desk {
+  position: absolute; inset: 0;
+  perspective: calc(var(--lw) * 3.4cqw);
+  perspective-origin: 50% 35%;
+}
+.mkb--desk .mkb-leaf {
+  transform:
+    rotateX(var(--rx)) rotateZ(var(--rz))
+    translate3d(calc(var(--x) * 1cqw), calc(var(--y) * 1cqw), 0)
+    rotateZ(var(--r));
+  /* shadow in the table plane: it gets the same perspective as the paper */
+  box-shadow:
+    0 calc(var(--lw) * .03cqw) calc(var(--lw) * .08cqw) rgba(0,0,0,.26),
+    0 calc(var(--lw) * .006cqw) calc(var(--lw) * .015cqw) rgba(0,0,0,.16);
+}
+
+/* contact shadow plane under the book: hidden unless a variant turns it on */
+.mkb-cast { display: none; }
+
+/* spine image (optional "spine" option) */
+.mkb-spine img { position: absolute; inset: 0; }
+
+/* ---------- variant: spine (standing, turned to show the spine) ---------- */
+.mkb--spine {
+  --bw: 50; --ry: 34deg; --rx: 0deg; --rz: 0deg; --persp: 3.2; --thick: .18;
+  --stage-h: calc(var(--bw) * var(--ratio) * 1.1 + 10);
+  --cy: calc(var(--bw) * var(--ratio) * .5 + 5);
+}
+.mkb--spine .mkb-ground {
+  position: absolute;
+  left: 50%; width: calc(var(--bw) * 1.15cqw); margin-left: calc(var(--bw) * -.6cqw);
+  top: calc((var(--cy) + var(--bw) * var(--ratio) * .5 - 2) * 1cqw);
+  height: 4cqw;
+  background: radial-gradient(closest-side, rgba(0,0,0,.5), rgba(0,0,0,0));
+  filter: blur(.7cqw);
+}
+/* the spine catches the light: lighter edge where it meets the front cover */
+.mkb--spine .mkb-spine {
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.30), rgba(255,255,255,.06) 55%, rgba(255,255,255,.16)),
+    var(--back);
+}
+.mkb--spine .mkb-spine::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(0,0,0,.30), rgba(0,0,0,0) 30%, rgba(0,0,0,0) 70%, rgba(255,255,255,.12));
+}
+
+/* ---------- variant: lying (flat on a table, seen from above) ---------- */
+.mkb--lying {
+  --bw: 46; --rx: 52deg; --ry: 0deg; --rz: 24deg; --persp: 3; --thick: .06;
+  --stage-h: calc(var(--bw) * (.42 + var(--ratio) * .56) + 6);
+  --cy: calc(var(--stage-h) * .5);
+}
+/* spin on the table first (rz), then tilt the table away from the viewer (rx) */
+.mkb--lying .mkb-book { transform: rotateX(var(--rx)) rotateZ(var(--rz)) rotateY(var(--ry)); }
+.mkb--lying .mkb-cast,
+.mkb--multi .mkb-cast {
+  display: block;
+  inset: 0;
+  transform: translateZ(calc(var(--D) * -.5 - .1cqw));
+  background: rgba(0,0,0,.5);
+  border-radius: calc(var(--W) * .01);
+  box-shadow: 0 0 calc(var(--W) * .06) calc(var(--W) * .01) rgba(0,0,0,.45),
+              calc(var(--W) * .03) calc(var(--W) * .05) calc(var(--W) * .12) rgba(0,0,0,.25);
+}
+
+/* =========================================================
+   MULTI-BOOK: pile, showcase, balance, fan (several books on the same table)
+   Every book shares the scene's perspective. Each one is placed on the table
+   (--dx, --dy in book widths), lifted to its level in the pile (--j) and turned (--spin).
+   Books are painted in DOM order (bottom first), which matches the view from above.
+   ========================================================= */
+.mkb--pile {
+  --bw: 44; --rx: 50deg; --ry: 0deg; --rz: 22deg; --persp: 3; --thick: .06;
+  --stage-h: calc(var(--bw) * (.62 + var(--ratio) * .56) + 10);
+  --cy: calc(var(--stage-h) * .47);
+}
+.mkb--showcase {
+  /* low camera (~20° above the table), hardcover-thick books */
+  --bw: 36; --rx: 73deg; --ry: 0deg; --rz: 0deg; --persp: 4; --thick: .09;
+  --stage-h: calc(var(--bw) * var(--ratio) * 1.42 + 12);
+  --cy: calc(var(--stage-h) - var(--bw) * var(--ratio) * .42 - 6);
+}
+
+.mkb--balance {
+  /* camera ~25° above the table; the standing book leans on its bottom corner */
+  --bw: 34; --rx: 66deg; --ry: 0deg; --rz: 0deg; --persp: 4; --thick: .09;
+  --stage-h: calc(var(--bw) * var(--ratio) * 1.62 + 14);
+  --cy: calc(var(--stage-h) - var(--bw) * var(--ratio) * .4 - 6);
+}
+.mkb--fan {
+  /* staggered row seen from above at an angle */
+  --bw: 30; --rx: 48deg; --ry: 0deg; --rz: -22deg; --persp: 3.6; --thick: .07;
+  --stage-h: calc(var(--bw) * (var(--ratio) * .8 + .5) + 8);
+  --cy: calc(var(--stage-h) * .5);
+}
+
+.mkb--multi .mkb-book {
+  transform:
+    rotateX(var(--rx)) rotateZ(var(--rz))
+    translate3d(calc(var(--dx) * var(--W)), calc(var(--dy) * var(--W)), calc(var(--j) * (var(--D) + .1cqw)))
+    rotateZ(var(--spin));
+}
+/* fan: books rest partly on the one behind, so they are barely lifted (paint order does the rest) */
+.mkb--fan .mkb-book {
+  transform:
+    rotateX(var(--rx)) rotateZ(var(--rz))
+    translate3d(calc(var(--dx) * var(--W)), calc(var(--dy) * var(--W)), calc(var(--j) * var(--D) * .35))
+    rotateZ(var(--spin));
+}
+/* books higher in the pile cast a lighter shadow on the book below */
+.mkb--multi .mkb-cast { opacity: calc(1 - min(var(--j), 1) * .4); }
+
+/* camera above the pile, so the top edge of a standing book is seen from above */
+.mkb--showcase .mkb-scene { perspective-origin: 50% -25%; }
+.mkb--balance .mkb-scene { perspective-origin: 50% 10%; }
+
+/* standing book: stood up on top of the pile (level --j), front facing the viewer, turned
+   on the pile (--spin) and rolled in its own plane (--roll). --lh/--lw (from the JS) lift
+   its centre so the lowest corner touches the top cover. */
+.mkb--multi .mkb-book--standing {
+  transform:
+    rotateX(var(--rx)) rotateZ(var(--rz))
+    translate3d(calc(var(--dx) * var(--W)), calc(var(--dy) * var(--W)),
+                calc((var(--j) - 1) * (var(--D) + .1cqw) + var(--D) * .5 + var(--H) * var(--lh) + var(--W) * var(--lw)))
+    rotateZ(var(--spin)) rotateX(-90deg) rotateZ(var(--roll));
+}
+.mkb--multi .mkb-book--standing .mkb-cast { display: none; }
+/* its contact shadow on the top cover of the pile (light from the front, so it falls backwards) */
+.mkb-floor {
+  position: absolute;
+  left: 0; width: 100%;
+  top: calc(50% - var(--D) * .5 - var(--W) * .03);
+  height: calc(var(--D) + var(--W) * .1);
+  background: rgba(0,0,0,.45);
+  border-radius: 30%;
+  filter: blur(calc(var(--W) * .025));
+  transform:
+    rotateX(var(--rx)) rotateZ(var(--rz))
+    translate3d(calc(var(--dx) * var(--W)), calc(var(--dy) * var(--W) - var(--W) * .03),
+                calc((var(--j) - 1) * (var(--D) + .1cqw) + var(--D) * .5 + .05cqw))
+    rotateZ(var(--spin));
+}
+
+/* =========================================================
+   SPREAD (open book, two curved facing pages)
+   ========================================================= */
+.mkb--spread {
+  --bw: 40;                 /* width of ONE page (% of the container) */
+  --rx: 34deg; --ry: 0deg; --rz: 0deg;
+  --persp: 4.2;             /* farther camera = less keystone distortion */
+  --stage-h: calc(var(--bw) * var(--ratio) * .98 + 12);
+}
+.mkb-spread-scene {
+  --W: calc(var(--bw) * 2cqw);
+  --H: calc(var(--bw) * var(--ratio) * 1cqw);
+  position: absolute;
+  left: 50%; top: 47%;
+  width: var(--W); height: var(--H);
+  margin-left: calc(var(--W) * -.5);
+  margin-top: calc(var(--H) * -.5);
+  perspective: calc(var(--W) * var(--persp));
+  perspective-origin: 50% 30%;
+}
+.mkb-spread-book {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateZ(var(--rz)) rotateX(var(--rx)) rotateY(var(--ry));
+}
+/* flat hard cover underneath: a thin rim shows around the page block */
+.mkb-spread-board {
+  position: absolute;
+  inset: -.3cqw -.7cqw -.8cqw;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0) 47%, rgba(0,0,0,.35) 50%, rgba(255,255,255,0) 53%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.15)),
+    var(--back);
+  border-radius: .7cqw;
+  transform: translateZ(-.2cqw);
+  /* soft contact shadow on the table, in the same plane as the book */
+  box-shadow:
+    0 .6cqw 1.4cqw rgba(0,0,0,.22),
+    0 2.5cqw 6cqw -1cqw rgba(0,0,0,.22);
+}
+/* soft ambient shadow on the floor (2D, blurred) */
+.mkb--spread .mkb-ground {
+  position: absolute;
+  left: 50%; width: calc(var(--bw) * 2.1cqw); margin-left: calc(var(--bw) * -1.05cqw);
+  bottom: 2cqw; height: 7cqw;
+  background: radial-gradient(closest-side, rgba(0,0,0,.28), rgba(0,0,0,0));
+  filter: blur(1.2cqw);
+}
+
+/* the top page: a chain of strips (see buildSheet in the JS) */
+.mkb-sheet {
+  --LW: calc(var(--bw) * 1cqw);           /* page width */
+  --step: calc(var(--LW) / 16);           /* 16 = STRIPS in the JS */
+  position: absolute;
+  top: 0; left: 50%;
+  width: 0; height: 100%;
+  transform-style: preserve-3d;
+}
+.mkb-strip {
+  position: absolute;
+  top: 0; height: 100%;
+  width: calc(var(--step) + 1px);           /* 1px overlap hides seams between strips */
+  transform-style: preserve-3d;
+  background-color: var(--page);
+  background-repeat: no-repeat;
+  background-size: var(--LW) 100%;
+  background-position: calc(var(--i, 0) * var(--step) * -1) 0;
+}
+.mkb-sheet--right .mkb-strip { left: var(--step); transform-origin: 0 50%; }
+.mkb-sheet--left  .mkb-strip { right: var(--step); transform-origin: 100% 50%; }
+.mkb-sheet--right > .mkb-strip { left: 0; }
+.mkb-sheet--left  > .mkb-strip { right: 0; }
+/* lighting: darker where the paper turns away from the light */
+.mkb-strip::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: rgba(40, 30, 15, var(--shade, 0));
+}
+/* the gutter: deep soft shadow where the pages meet the spine */
+.mkb-sheet--right .mkb-strip--gutter::after {
+  background: linear-gradient(90deg, rgba(0,0,0,.42), rgba(0,0,0,.14) 45%, rgba(40,30,15,var(--shade)) 100%);
+}
+.mkb-sheet--left .mkb-strip--gutter::after {
+  background: linear-gradient(270deg, rgba(0,0,0,.42), rgba(0,0,0,.14) 45%, rgba(40,30,15,var(--shade)) 100%);
+}
+/* blank page (when there is no image for a side) */
+.mkb-strip--lines {
+  background-image: repeating-linear-gradient(180deg, transparent 0 calc(var(--bw) * .02cqw), rgba(60,50,35,.16) calc(var(--bw) * .02cqw) calc(var(--bw) * .026cqw));
+  background-size: 100% 76%;
+  background-position: 0 50%;
+}
+
+/* page block: walls hanging from the page edges down to the cover (--h = page height,
+   as a fraction of the page width; +.25cqw reaches just below the board surface) */
+.mkb-edge {
+  position: absolute;
+  --edge-h: calc(var(--h) * var(--bw) * 1cqw + .25cqw);
+  --lines: rgba(120, 100, 70, .22) 0 .06cqw, var(--page) .06cqw .2cqw;
+}
+.mkb-edge--bottom {
+  top: 100%; left: 0;
+  width: 100%; height: var(--edge-h);
+  transform-origin: 50% 0;
+  transform: rotateX(-90deg);
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.16)),
+    repeating-linear-gradient(180deg, var(--lines));
+}
+.mkb-edge--outer {
+  top: 0; height: 100%;
+  width: var(--edge-h);
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,0) 40%, rgba(0,0,0,.08)),
+    repeating-linear-gradient(90deg, var(--lines));
+}
+.mkb-sheet--right .mkb-edge--outer { left: 100%;  transform-origin: 0 50%;    transform: rotateY(90deg); }
+.mkb-sheet--left  .mkb-edge--outer { right: 100%; transform-origin: 100% 50%; transform: rotateY(-90deg);
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,0) 40%, rgba(0,0,0,.08)),
+    repeating-linear-gradient(270deg, var(--lines));
+}
+
+/* load error */
+.mkb--error .mkb-stage { outline: 1px dashed rgba(200,0,0,.5); }
